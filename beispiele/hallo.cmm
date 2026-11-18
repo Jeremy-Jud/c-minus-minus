@@ -1,0 +1,16 @@
+-- Mein erstes C---Programm
+helloworld(print)
+bugs=none
+
+name = "Wie heisst du?"(ask)
+"Hallo " + name + "!"(rainbow)
+
+alter = "Wie alt bist du?"(ask)
+alter > 17 ? "Du darfst Auto fahren 🚗"(print) : "Noch " + (18 - alter) + " Jahre bis zum Führerschein"(print)
+
+coffee(drink)(2x)
+"Zähle: " + i(print)(3x)
+geheim(reverse)(upper)(print)
+"Würfel: " + 6(dice)(print)
+"Sinn des Lebens: " + life(meaning)(print)
+nasa(hack)

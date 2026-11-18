@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:">
+  <title>C-- Studio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="bar">
+    <div class="logo"><span class="logo-c">C</span><span class="logo-mm">--</span> <span class="logo-s">Studio</span></div>
+    <div class="tools">
+      <button id="bNew" title="Neu (Strg+N)">📄 Neu</button>
+      <button id="bOpen" title="Öffnen (Strg+O)">📂 Öffnen</button>
+      <button id="bSave" title="Speichern (Strg+S)">💾 Speichern</button>
+      <span class="sep"></span>
+      <button id="bRun" class="run" title="Ausführen (F5)">▶ Ausführen</button>
+      <button id="bStop" class="stop" title="Stoppen (Umschalt+F5)" disabled>⏹ Stopp</button>
+      <span class="sep"></span>
+      <select id="examples" title="Beispiele">
+        <option value="">📚 Beispiele …</option>
+      </select>
+      <button id="bBugs" title="Entfernt alle Bugs. Garantiert. Fast.">🐛 Bugs entfernen</button>
+    </div>
+    <button id="bHelp" class="help" title="Spickzettel ein/aus (F1)">❓</button>
+  </header>
+
+  <main class="main">
+    <section class="editor-wrap">
+      <div class="tabs"><div class="tab on"><span id="tabName">unbenannt.cmm</span><span id="tabDirty" class="dirty hidden">●</span></div></div>
+      <div class="editor" id="editor">
+        <div class="gutter" id="gutter"></div>
+        <div class="code">
+          <pre class="hl" id="hl" aria-hidden="true"></pre>
+          <textarea id="src" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" aria-label="Code"></textarea>
+        </div>
+      </div>
+      <div class="resizer" id="resizer" title="Ziehen zum Vergrössern"></div>
+      <div class="term-wrap" id="termWrap">
+        <div class="term-head">
+          <span>Terminal</span>
+          <span class="term-hint">Hier kannst du auch direkt C-- tippen</span>
+          <button id="bClear" title="Terminal leeren">🧹</button>
+        </div>
+        <div class="term" id="term" tabindex="0"></div>
+      </div>
+    </section>
+
+    <aside class="side" id="side">
+      <h2>Spickzettel</h2>
+      <p class="muted">Regel Nr. 1: erst der Wert, dann die Funktion. Klick fügt ein.</p>
+      <div id="snippets"></div>
+    </aside>
+  </main>
+
+  <footer class="status">
+    <span id="stState">Bereit</span>
+    <span id="stTroll" class="muted"></span>
+    <span class="grow"></span>
+    <span id="stBugs">🐛 Bugs: viele</span>
+    <span id="stCoffee">☕ 0</span>
+    <span id="stPos">Z 1, S 1</span>
+    <span>C-- 1.0</span>
+  </footer>
+
+  <script src="../core.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+{
+  "name": "c-minus-minus",
+  "version": "1.0.0",
+  "description": "C--: die Programmiersprache, die weniger kann als C++. Mit eigener Entwicklungsumgebung (C-- Studio).",
+  "main": "ide/main.js",
+  "bin": {
+    "cmm": "cmm.js"
+  },
+  "scripts": {
+    "start": "electron .",
+    "cli": "node cmm.js",
+    "dist": "electron-builder --win --publish never",
+    "icon": "electron build/make-icon.js"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^45.2.3",
+    "electron-builder": "^26.18.0"
+  },
+  "author": "Jeremy Jud",
+  "build": {
+    "appId": "com.cminusminus.studio",
+    "productName": "C-- Studio",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "ide/**/*",
+      "core.js",
+      "beispiele/**/*",
+      "package.json"
+    ],
+    "fileAssociations": [
+      {
+        "ext": "cmm",
+        "name": "C-- Programm",
+        "description": "C-- Programm",
+        "icon": "build/icon.ico"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico",
+      "signExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "C-- Studio",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "artifactName": "C-- Studio Setup ${version}.exe"
+    }
+  }
+}
