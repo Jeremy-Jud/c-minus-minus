@@ -114,6 +114,13 @@ button, select { font: inherit; color: inherit; }
 .status { display: flex; gap: 16px; align-items: center; padding: 3px 12px; font-size: 12px; background: var(--accent); color: #1a0d2e; font-weight: 600; white-space: nowrap; overflow: hidden; }
 .status .muted { color: #3b2463; font-weight: 500; overflow: hidden; text-overflow: ellipsis; }
 .status .grow { flex: 1; }
+.status button { background: none; border: 0; padding: 1px 6px; margin: -1px -6px; border-radius: 5px; font: inherit; color: inherit; cursor: pointer; }
+.status button:hover { background: rgba(0, 0, 0, .14); }
+.status .st-upd { background: #1a0d2e; color: #fff; margin: -1px 0; padding: 1px 9px; }
+.status .st-upd.ready { background: var(--run); color: #08130c; animation: pulse 1.6s ease-in-out infinite; }
+.status .st-upd:hover { filter: brightness(1.15); background: #1a0d2e; }
+.status .st-upd.ready:hover { background: var(--run); }
+@keyframes pulse { 50% { box-shadow: 0 0 0 4px rgba(47, 191, 113, .35); } }
 body.running .status { background: var(--run); }
 body.failed .status { background: var(--stop); color: #fff; }
 body.failed .status .muted { color: #ffe1e1; }

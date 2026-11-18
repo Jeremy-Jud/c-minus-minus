@@ -408,6 +408,39 @@ exit(please)
   const rotate = () => { $('stTroll').textContent = troll(TROLLS); };
   rotate(); setInterval(rotate, 9000);
 
+  // ================= Updates =================
+  const stVer = $('stVer'), stUpd = $('stUpd');
+  let manualCheck = false;
+  window.studio.version().then((v) => { stVer.textContent = `C-- Studio ${v}`; });
+  function showUpdate(s) {
+    stUpd.className = 'st-upd hidden';
+    stUpd.onclick = null;
+    if (s.state === 'downloading') {
+      stUpd.className = 'st-upd';
+      stUpd.textContent = `⬇ Update ${s.version || ''} wird geladen … ${s.percent || 0} %`;
+    } else if (s.state === 'ready') {
+      stUpd.className = 'st-upd ready';
+      stUpd.textContent = `🎁 Update ${s.version} bereit – neu starten`;
+      stUpd.title = 'Jetzt installieren. Dein Code bleibt erhalten.';
+      stUpd.onclick = () => { saveDraft(); window.studio.installUpdate(); };
+      if (manualCheck || !stUpd.dataset.told) {
+        stUpd.dataset.told = '1';
+        write(`\x1b[32m🎁 C-- Studio ${s.version} ist da. Neue Bugs, äh, Features! Klick unten rechts auf „neu starten“.\x1b[0m\n`);
+      }
+    }
+    if (!manualCheck) return;
+    if (s.state === 'none') { status('✓ Du hast die neueste Version. Mehr Bugs gibt es noch nicht.'); manualCheck = false; }
+    else if (s.state === 'error') {
+      status(s.reason === 'offline' ? '📡 Kein Internet. Updates müssen warten.' : s.reason === 'notfound' ? '🔒 Kein Update gefunden (Repo privat oder noch kein Release).' : '⚠️ Update-Suche fehlgeschlagen.');
+      manualCheck = false;
+    } else if (s.state === 'dev') { status('🛠️ Entwicklerversion: Updates gibt es nur in der installierten App.'); manualCheck = false; }
+    else if (s.state === 'checking') status('🔎 Suche nach Updates …');
+    else if (s.state === 'ready' || s.state === 'downloading') manualCheck = false;
+  }
+  window.studio.onUpdate(showUpdate);
+  window.studio.updateState().then(showUpdate);
+  stVer.onclick = async () => { manualCheck = true; status('🔎 Suche nach Updates …'); showUpdate(await window.studio.checkUpdate()); };
+
   // Datei per Doppelklick im Explorer geöffnet
   window.studio.onOpenFile((f) => {
     if (!f || !okToDiscard()) return;

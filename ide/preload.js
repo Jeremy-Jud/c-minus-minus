@@ -7,4 +7,9 @@ contextBridge.exposeInMainWorld('studio', {
   setDirty: (v) => ipcRenderer.send('dirty', !!v),
   setTitle: (t) => ipcRenderer.send('title', String(t)),
   onOpenFile: (cb) => ipcRenderer.on('open-file', (_e, f) => cb(f)),
+  version: () => ipcRenderer.invoke('version'),
+  checkUpdate: () => ipcRenderer.invoke('update-check'),
+  updateState: () => ipcRenderer.invoke('update-state'),
+  installUpdate: () => ipcRenderer.send('update-install'),
+  onUpdate: (cb) => ipcRenderer.on('update', (_e, s) => cb(s)),
 });

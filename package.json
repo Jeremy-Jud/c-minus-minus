@@ -55,7 +55,20 @@
       "shortcutName": "C-- Studio",
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico",
-      "artifactName": "C-- Studio Setup ${version}.exe"
+      "artifactName": "CMinusMinus-Studio-Setup.exe"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "Jeremy-Jud",
+      "repo": "c-minus-minus"
     }
-  }
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.11"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Jeremy-Jud/c-minus-minus.git"
+  },
+  "homepage": "https://github.com/Jeremy-Jud/c-minus-minus"
 }

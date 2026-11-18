@@ -2,6 +2,16 @@
 
 Die Programmiersprache, die weniger kann als C++. Absichtlich.
 
+## ⬇️ Download
+
+**[C-- Studio für Windows herunterladen](https://github.com/Jeremy-Jud/c-minus-minus/releases/latest/download/CMinusMinus-Studio-Setup.exe)** – Installer mit Desktop-Verknüpfung, `.cmm`-Dateien öffnen sich per Doppelklick.
+
+Alle Versionen: [Releases](https://github.com/Jeremy-Jud/c-minus-minus/releases)
+
+> Windows meldet beim ersten Start vielleicht „Der Computer wurde durch Windows geschützt“, weil der Installer nicht signiert ist. Dann auf **Weitere Informationen → Trotzdem ausführen** klicken.
+
+**Updates:** C-- Studio sucht beim Start und alle 4 Stunden selbst nach einer neuen Version und lädt sie im Hintergrund. Ist sie bereit, erscheint unten rechts „🎁 Update bereit – neu starten“. Von Hand: unten rechts auf die Versionsnummer klicken.
+
 **Regel Nr. 1:** Erst kommt der Wert, dann die Funktion.
 
 ```
@@ -74,7 +84,15 @@ Im Terminal kannst du auch direkt C-- tippen, mit ↑/↓ holst du frühere Befe
 
 ```
 npm run icon   # Icon neu zeichnen (build/icon.ico, build/icon.png)
-npm run dist   # Installer: dist/C-- Studio Setup 1.0.0.exe
+npm run dist   # Installer: dist/CMinusMinus-Studio-Setup.exe
 ```
 
 Der Installer fragt nach dem Ordner, legt eine Desktop- und Startmenü-Verknüpfung an und verknüpft `.cmm`-Dateien mit C-- Studio (Doppelklick öffnet sie direkt).
+
+## Neue Version veröffentlichen
+
+1. Version in `package.json` erhöhen (z. B. `1.0.1`).
+2. `npm run dist`
+3. Release auf GitHub mit dem Tag `v1.0.1` anlegen und `CMinusMinus-Studio-Setup.exe`, `CMinusMinus-Studio-Setup.exe.blockmap` und `latest.yml` aus `dist/` hochladen.
+
+Installierte Apps finden das Update dann von selbst. Das klappt nur, solange das Repo öffentlich ist: Bei einem privaten Repo bekommt die App von GitHub keine Antwort.

@@ -48,6 +48,42 @@ function createWindow() {
   win.on('closed', () => { win = null; });
 }
 
+// ---------- Updates über GitHub-Releases ----------
+// Nur in der installierten App. Der Status geht an die Statusleiste im Fenster.
+let updater = null;
+let updateState = { state: 'idle' };
+function sendUpdate(s) { updateState = s; if (win && !win.isDestroyed()) win.webContents.send('update', s); }
+function setupUpdater() {
+  if (!app.isPackaged) return;
+  try { ({ autoUpdater: updater } = require('electron-updater')); } catch { return; }
+  updater.autoDownload = true;
+  updater.autoInstallOnAppQuit = true;
+  updater.on('checking-for-update', () => sendUpdate({ state: 'checking' }));
+  updater.on('update-available', (i) => sendUpdate({ state: 'downloading', version: i.version, percent: 0 }));
+  updater.on('update-not-available', () => sendUpdate({ state: 'none' }));
+  updater.on('download-progress', (p) => sendUpdate({ ...updateState, state: 'downloading', percent: Math.round(p.percent || 0) }));
+  updater.on('update-downloaded', (i) => sendUpdate({ state: 'ready', version: i.version }));
+  updater.on('error', (e) => {
+    const msg = String((e && e.message) || e);
+    // Privates Repo oder noch kein Release: GitHub antwortet mit 404
+    sendUpdate({ state: 'error', reason: /404|Not Found|Unable to find latest version/i.test(msg) ? 'notfound' : /ENOTFOUND|ECONNREFUSED|ETIMEDOUT|net::/i.test(msg) ? 'offline' : 'other' });
+  });
+  setTimeout(() => updater.checkForUpdates().catch(() => {}), 4000);
+  setInterval(() => updater.checkForUpdates().catch(() => {}), 4 * 3600e3);
+}
+ipcMain.handle('update-check', async () => {
+  if (!updater) return { state: 'dev' };
+  try { await updater.checkForUpdates(); } catch {}
+  return updateState;
+});
+ipcMain.handle('update-state', () => (updater ? updateState : { state: 'dev' }));
+ipcMain.on('update-install', () => {
+  if (!updater || updateState.state !== 'ready') return;
+  dirty = false; // Entwurf ist im Fenster gespeichert und kommt nach dem Neustart zurück
+  updater.quitAndInstall(false, true);
+});
+ipcMain.handle('version', () => app.getVersion());
+
 ipcMain.on('dirty', (_e, v) => { dirty = !!v; });
 ipcMain.on('title', (_e, t) => { if (win) win.setTitle(String(t).slice(0, 200)); });
 
@@ -82,6 +118,6 @@ else {
     const f = p && readCmm(p);
     if (f) win.webContents.send('open-file', f);
   });
-  app.whenReady().then(createWindow);
+  app.whenReady().then(() => { createWindow(); setupUpdater(); });
 }
 app.on('window-all-closed', () => app.quit());
