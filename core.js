@@ -2,7 +2,7 @@
 // io = { write(text), readLine(prompt) -> Promise<string|null>, clear(), exit(), stopped() }
 (function (root) {
   'use strict';
-  const VERSION = '1.0 (Codename: „Warum?“)';
+  const VERSION = '1.1 (Codename: „Einfach so“)';
   const c = {
     reset: '\x1b[0m', dim: '\x1b[2m', bold: '\x1b[1m',
     red: '\x1b[31m', green: '\x1b[32m', yellow: '\x1b[33m', blue: '\x1b[34m', magenta: '\x1b[35m', cyan: '\x1b[36m', gray: '\x1b[90m',
@@ -25,6 +25,9 @@
     'Das funktioniert auf meinem Rechner auch nicht.',
   ];
   const fail = (msg) => { throw new CmmError(msg); };
+  // Die Zeile ist keine Rechnung: dann ist sie einfach Text
+  class ParseError extends CmmError {}
+  const parseFail = (msg) => { throw new ParseError(msg); };
 
   // ---------- Zustand ----------
   const vars = Object.create(null);
@@ -125,7 +128,7 @@
       if (ch === '"' || ch === "'") {
         let j = i + 1, s = '';
         while (j < src.length && src[j] !== ch) s += src[j++];
-        if (j >= src.length) fail('Da fehlt ein Anführungszeichen. Ich hab gewartet, aber es kam keins.');
+        if (j >= src.length) parseFail('Da fehlt ein Anführungszeichen. Ich hab gewartet, aber es kam keins.');
         t.push({ k: 'str', v: s }); i = j + 1; continue;
       }
       const n = /^\d+(?:\.\d+)?/.exec(src.slice(i));
@@ -134,7 +137,7 @@
       if (w) { t.push({ k: 'id', v: w[0] }); i += w[0].length; continue; }
       const op = /^(==|!=|>=|<=|[-+*/%()<>])/.exec(src.slice(i));
       if (op) { t.push({ k: 'op', v: op[0] }); i += op[0].length; continue; }
-      fail(`Was soll „${ch}“ sein? ` + pick(ROASTS));
+      parseFail(`Was soll „${ch}“ sein? ` + pick(ROASTS));
     }
     return t;
   }
@@ -147,7 +150,7 @@
     const isCall = () => isOp('(') && peek(1) && peek(1).k === 'id' && isFunc(peek(1).v) && isOp(')', 2);
     async function primary() {
       const tk = t[p++];
-      if (!tk) fail('Da fehlt was am Ende. Ich bin ja kein Hellseher.');
+      if (!tk) parseFail('Da fehlt was am Ende. Ich bin ja kein Hellseher.');
       if (tk.k === 'num' || tk.k === 'str') return tk.v;
       if (tk.k === 'id') {
         if (tk.v in vars) return vars[tk.v];
@@ -162,11 +165,11 @@
         if (isCall()) { const f = peek(1).v; p += 3; return FUNCS[f](undefined); } // (ask) ohne Wert davor
         p++;
         const v = await cmp();
-        if (!isOp(')')) fail('Klammer auf, aber nie wieder zu. Wie ein Tab im Browser.');
+        if (!isOp(')')) parseFail('Klammer auf, aber nie wieder zu. Wie ein Tab im Browser.');
         p++;
         return v;
       }
-      fail(`„${tk.v}“ hier? ` + pick(ROASTS));
+      parseFail(`„${tk.v}“ hier? ` + pick(ROASTS));
     }
     async function postfix() {
       let v = await primary();
@@ -213,7 +216,7 @@
       }
     }
     const v = await cmp();
-    if (p < t.length) fail(`Was macht „${t[p].v}“ da? ` + pick(ROASTS));
+    if (p < t.length) parseFail(`Was macht „${t[p].v}“ da? ` + pick(ROASTS));
     return v;
   }
 
@@ -256,8 +259,42 @@
     if (/^sudo\b/i.test(s)) { out(c.red + 'Netter Versuch. Hier ist niemand Admin. Nicht mal ich.' + c.reset); return; }
     if (/^c\+\+$/i.test(s)) { out('Igitt. 🤢'); return; }
     if (/^exit$/i.test(s)) { out(c.yellow + 'Wie sagt man? → exit(please)' + c.reset); return; }
-    if (/^(help|hilfe)$/i.test(s)) { out('Fast. → help(me)'); return; }
-    if (/^(cls|clear)$/i.test(s)) { io.clear(); return; }
+
+    // ---------- Einfache Befehle: einfach das Wort hinschreiben ----------
+    const cmd = s.toLowerCase();
+    if (Object.hasOwn(CMDS, cmd)) { await CMDS[cmd](); return; }
+
+    // Wiederholen: 3x hallo welt
+    const rep0 = /^(\d+)\s*x\s+(.+)$/i.exec(s);
+    if (rep0) {
+      const n = Number(rep0[1]);
+      if (n > 1000) fail('Mehr als 1000 Mal? Ich hab auch noch ein Leben.');
+      for (let i = 0; i < n; i++) { vars.i = i + 1; await run(rep0[2]); }
+      return;
+    }
+
+    // Wenn … dann … sonst …
+    const wenn = /^wenn\s+(.+?)\s+dann\s+(.+?)(?:\s+sonst\s+(.+))?$/i.exec(s);
+    if (wenn) {
+      // ein einzelnes = heisst hier „ist gleich“
+      const ok = await evaluate(wenn[1].replace(/(^|[^=!<>])=(?!=)/g, '$1=='));
+      if (ok) await run(wenn[2]);
+      else if (wenn[3]) await run(wenn[3]);
+      return;
+    }
+
+    // Fragen: frag Wie heisst du?
+    const frag0 = /^frage?\s+(.+)$/i.exec(s);
+    if (frag0) { await FUNCS.ask(toText(frag0[1])); return; }
+
+    // Knöpfe: knopf1 = delete  (beim Klick wird „delete“ ausgeführt)
+    const knopf = /^((?:knopf|button)[\wÄÖÜäöüß]*)\s*=(?!=)\s*(.+)$/i.exec(s);
+    if (knopf) {
+      const [, name, action] = knopf;
+      if (io.button) io.button(name, () => runLine(action, name));
+      else out(c.gray + `[ ${name} ]  (Knöpfe zum Klicken gibt es nur im C-- Studio)` + c.reset);
+      return;
+    }
 
     // Wiederholen: irgendwas(3x)
     const rep = /\((\d+)x\)\s*$/.exec(s);
@@ -292,7 +329,8 @@
     if (asg) {
       const [, name, rhs] = asg;
       if (!rhs.trim()) fail(`${name} = … was denn?`);
-      const v = await evalChain(rhs);
+      const fr = /^frage?\s+(.+)$/i.exec(rhs.trim());
+      const v = fr ? await FUNCS.ask(toText(fr[1])) : await evalOrText(rhs);
       if (name === 'bugs') { setBugs(v); return; }
       if (isFunc(name)) fail(`${name} ist schon eine Funktion. Such dir einen eigenen Namen.`);
       vars[name] = v;
@@ -301,35 +339,61 @@
 
     // Alles andere: ausrechnen. Wurde nichts ausgegeben, zeigt die Konsole das Ergebnis (wie PowerShell).
     state.printed = false;
-    const v = await evalChain(s);
+    const v = await evalOrText(s);
     if (!state.printed && v !== undefined && v !== null) out(show(v));
   }
 
+  // Text: Wörter, die Variablen sind, werden durch ihren Wert ersetzt („hallo name“ → „hallo Anna“)
+  const toText = (s) => s.trim().replace(/[A-Za-zÄÖÜäöüß_][\wÄÖÜäöüß]*/g, (w) => (w in vars ? show(vars[w]) : w));
+  // Erst als Rechnung versuchen, sonst ist es einfach Text
+  async function evalOrText(s) {
+    try { return await evalChain(s); }
+    catch (e) { if (e instanceof ParseError) return toText(s); throw e; }
+  }
+
+  const JOKES = [
+    'Warum mögen Programmierer keine Natur? Zu viele Bugs.',
+    'Es gibt 10 Arten von Menschen: die, die binär verstehen, und die anderen.',
+    'Mein Code hat keine Bugs. Nur zufällige Features.',
+    '„Bei mir funktioniert’s.“ – Jeder Programmierer, immer.',
+    'Ein SQL-Befehl geht in eine Bar, sieht zwei Tabellen und fragt: „Darf ich joinen?“',
+    'C++ hat zwei Plus. C-- hat zwei Minus. Mathematisch sind wir quitt.',
+  ];
+  const CMDS = {
+    delete: () => io.clear(), löschen: () => io.clear(), 'alles löschen': () => io.clear(), clear: () => io.clear(), cls: () => io.clear(),
+    help: () => showHelp(), hilfe: () => showHelp(),
+    konfetti: () => out([...Array(24)].map(() => pick(['🎉', '🎊', '✨', '🥳', '🎈', '⭐'])).join('')),
+    witz: () => out('😄 ' + pick(JOKES)),
+    würfel: () => out('🎲 ' + FUNCS.dice(6)),
+    münze: () => out('🪙 ' + FUNCS.coin()),
+    zeit: () => out('🕒 ' + new Date().toLocaleTimeString('de-CH')),
+    uhr: () => out('🕒 ' + new Date().toLocaleTimeString('de-CH')),
+    datum: () => out('📅 ' + new Date().toLocaleDateString('de-CH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })),
+    kaffee: () => FUNCS.drink('kaffee'),
+    hack: () => FUNCS.hack('NASA'),
+    tschüss: () => { out(c.green + 'Tschüss! 👋' + c.reset); io.exit(); },
+  };
+
   function showHelp() {
-    const h = (a, b) => out(`  ${c.yellow}${a.padEnd(37)}${c.reset}${b}`);
-    out(c.bold + '\nC-- Spickzettel' + c.reset + c.gray + '  (Regel Nr. 1: erst der Wert, dann die Funktion)' + c.reset);
-    h('helloworld(print)', 'Hello, World!');
-    h('"Hallo"(print)', 'Text ausgeben (Anführungszeichen sind optional)');
-    h('hallo(yell)  hallo(whisper)', 'laut oder leise ausgeben');
-    h('hallo(rainbow)', 'bunt ausgeben');
-    h('x = 5', 'Variable');
-    h('x++   x--', 'plus 1 / minus 1 (-- ist natürlich besser)');
-    h('(x * 2 + 1)(print)', 'Rechnen: + - * / %');
-    h('name = "Wie heisst du?"(ask)', 'Eingabe');
-    h('"Hi " + name(print)', 'Text zusammenkleben ((print) am Ende gilt für alles)');
-    h('hallo(upper)(reverse)(print)', 'Funktionen hintereinander');
-    h('"Spam"(print)(3x)', 'Wiederholen (i zählt mit)');
-    h('x > 3 ? gross(print) : klein(print)', 'Wenn … sonst');
+    const h = (a, b) => out(`  ${c.yellow}${a.padEnd(36)}${c.reset}${b}`);
+    out(c.bold + '\nC-- Spickzettel' + c.reset + c.gray + '  (einfach hinschreiben, ohne "" und ohne print)' + c.reset);
+    h('hallo welt', 'zeigt „hallo welt“');
+    h('zahl1 = 5', 'Variable');
+    h('zahl1 + zahl2', 'rechnen: + - * / %');
+    h('hallo name', 'Variablen im Text werden ersetzt');
+    h('name = frag Wie heisst du?', 'fragen');
+    h('3x hallo', 'wiederholen (i zählt mit)');
+    h('wenn x > 3 dann gross sonst klein', 'wenn … dann … sonst');
+    h('knopf1 = delete', 'Knopf: Klick löscht alles (nur im Studio)');
+    h('knopf2 = konfetti', 'Knopf mit beliebigem Befehl');
+    h('x--   x++', 'minus 1 / plus 1');
     h('bugs=none', 'alle Bugs entfernen');
-    h('bugs=features', 'Bugs umbenennen');
-    h('coffee(drink)', 'Produktivität erhöhen');
-    h('nasa(hack)', 'sehr echtes Hacken');
-    h('6(dice)  (coin)  life(meaning)', 'Würfel, Münze, Sinn des Lebens');
-    h('2(sleep)', 'warten');
-    h('-- Kommentar', 'Kommentar');
-    h('clear(screen)', 'Bildschirm leeren');
-    h('exit(please)', 'beenden (aber nur mit „bitte“)');
-    out(c.gray + '  Weitere Funktionen: upper lower reverse length double square half fix delete' + c.reset + '\n');
+    h('delete', 'alles löschen');
+    h('konfetti  witz  würfel  münze', 'Spass');
+    h('zeit  datum  kaffee  hack', 'noch mehr Spass');
+    h('-- Kommentar', 'wird ignoriert');
+    h('tschüss', 'beenden');
+    out(c.gray + '  Profi-Modus: "Text"(print), hallo(yell), hallo(rainbow), name = "Frage?"(ask), "Spam"(print)(3x)' + c.reset + '\n');
     return null;
   }
 
@@ -338,7 +402,7 @@
     out('Copyright (C) Niemand. Alle Rechte verloren.');
     out('');
     out(c.gray + 'Lade Bugs … ' + c.reset + c.green + 'fertig (' + (Math.floor(Math.random() * 900) + 100) + ' gefunden).' + c.reset);
-    out('Tipp: ' + c.yellow + 'help(me)' + c.reset + ' zeigt alle Befehle.');
+    out('Tipp: ' + c.yellow + 'hilfe' + c.reset + ' zeigt alle Befehle.');
     out('');
   }
   async function runLine(line, label) {

@@ -90,6 +90,10 @@ button, select { font: inherit; color: inherit; }
 .term { flex: 1; overflow: auto; padding: 8px 12px; font: 13.5px/1.45 var(--mono); color: var(--ps-fg); white-space: pre-wrap; word-break: break-word; outline: none; cursor: text; }
 .term .tl { min-height: 1.45em; }
 .term input { background: transparent; border: 0; outline: none; color: #fff; font: inherit; padding: 0; width: 60%; caret-color: #fff; }
+.term-btn { font: 600 13px/1 "Segoe UI", system-ui, sans-serif; color: #fff; background: #2b6fd6; border: 1px solid #5d9bff; border-radius: 8px; padding: 7px 16px; margin: 3px 0; cursor: pointer; box-shadow: 0 2px 0 #0b3f8f; }
+.term-btn:hover { background: #3a80ea; }
+.term-btn:active { transform: translateY(2px); box-shadow: none; }
+.t-knopf { color: #5d9bff; font-weight: 700; }
 .a-bold { font-weight: 700; }
 .a-dim { opacity: .65; }
 .a-red { color: #ff6b6b; }

@@ -1,0 +1,7 @@
+-- Knöpfe: im Terminal anklicken
+Klick mal auf die Knöpfe!
+knopf1 = delete
+knopf2 = konfetti
+knopf3 = witz
+knopf4 = würfel
+knopf5 = zeit

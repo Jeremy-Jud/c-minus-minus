@@ -12,16 +12,17 @@ Alle Versionen: [Releases](https://github.com/Jeremy-Jud/c-minus-minus/releases)
 
 **Updates:** C-- Studio sucht beim Start und alle 4 Stunden selbst nach einer neuen Version und lädt sie im Hintergrund. Ist sie bereit, erscheint unten rechts „🎁 Update bereit – neu starten“. Von Hand: unten rechts auf die Versionsnummer klicken.
 
-**Regel Nr. 1:** Erst kommt der Wert, dann die Funktion.
+**Regel Nr. 1:** Einfach hinschreiben. Keine Anführungszeichen, kein `print`.
 
 ```
-helloworld(print)
-bugs=none
-name = "Wie heisst du?"(ask)
-"Hallo " + name(rainbow)
-coffee(drink)(3x)
-nasa(hack)
-exit(please)
+hallo welt
+zahl1 = 5
+zahl2 = 3
+zahl1 + zahl2
+name = frag Wie heisst du?
+hallo name!
+wenn zahl1 > 3 dann gross sonst klein
+knopf1 = delete
 ```
 
 ## Starten
@@ -37,27 +38,28 @@ Ohne `C--.cmd` geht es auch mit `node cmm.js` bzw. `node cmm.js datei.cmm`. Es b
 
 | Code | Was passiert |
 |---|---|
-| `helloworld(print)` | Hello, World! |
-| `hallo(print)` | Text ausgeben (Anführungszeichen sind optional) |
-| `hallo(yell)`, `hallo(whisper)`, `hallo(rainbow)` | laut, leise, bunt |
-| `x = 5`, `x++`, `x--` | Variablen |
-| `(x * 2 + 1)(print)` | Rechnen mit `+ - * / %` |
-| `name = "Wie heisst du?"(ask)` | Eingabe |
-| `hallo(upper)(reverse)(print)` | Funktionen hintereinander |
-| `"Spam"(print)(3x)` | Wiederholen, `i` zählt mit |
-| `x > 3 ? gross(print) : klein(print)` | Wenn … sonst |
+| `hallo welt` | zeigt „hallo welt“ |
+| `zahl1 = 5` | Variable |
+| `zahl1 + zahl2` | rechnen mit `+ - * / %`, das Ergebnis erscheint von selbst |
+| `summe = zahl1 + zahl2` | Ergebnis in einer Variable merken |
+| `hallo name` | Variablen im Text werden durch ihren Wert ersetzt |
+| `name = frag Wie heisst du?` | fragen |
+| `3x hallo` | wiederholen, `i` zählt mit |
+| `wenn x > 3 dann gross sonst klein` | wenn … dann … sonst |
+| `knopf1 = delete` | Knopf im Studio, ein Klick löscht alles |
+| `knopf2 = konfetti` | Knopf mit beliebigem Befehl oder Text |
+| `x--`, `x++` | minus 1, plus 1 |
 | `bugs=none` | alle Bugs entfernen |
-| `bugs=features` | Bugs umbenennen |
-| `coffee(drink)` | Produktivität erhöhen |
-| `nasa(hack)` | sehr echtes Hacken |
-| `6(dice)`, `(coin)`, `life(meaning)` | Würfel, Münze, 42 |
-| `2(sleep)` | warten |
-| `-- Kommentar` | Kommentar |
-| `clear(screen)` | Bildschirm leeren |
-| `help(me)` | Hilfe |
-| `exit(please)` | beenden, aber nur mit „bitte“ |
+| `delete` | alles löschen |
+| `konfetti`, `witz`, `würfel`, `münze` | Spass |
+| `zeit`, `datum`, `kaffee`, `hack` | noch mehr Spass |
+| `-- Kommentar` | wird ignoriert |
+| `hilfe` | alle Befehle |
+| `tschüss` | beenden |
 
-Semikolons, `sudo`, `C++` und `exit` ohne „please“ werden nicht gern gesehen.
+**Profi-Modus** (geht weiterhin): `"Text"(print)`, `hallo(yell)`, `hallo(rainbow)`, `name = "Frage?"(ask)`, `"Spam"(print)(3x)`, `x > 3 ? gross(print) : klein(print)`, `exit(please)`.
+
+Semikolons, `sudo` und `C++` werden nicht gern gesehen.
 
 ## C-- Studio (Entwicklungsumgebung)
 

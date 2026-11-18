@@ -10,79 +10,90 @@
 
   // ================= Beispiele =================
   const EXAMPLES = {
-    'Hallo Welt': `-- Mein erstes C---Programm
-helloworld(print)
+    'Hallo Welt': `-- Mein erstes C---Programm: einfach hinschreiben!
+hallo welt
 bugs=none
 
-name = "Wie heisst du?"(ask)
-"Hallo " + name + "!"(rainbow)
+name = frag Wie heisst du?
+hallo name, schön dass du da bist!
 
-alter = "Wie alt bist du?"(ask)
-alter > 17 ? "Du darfst Auto fahren 🚗"(print) : "Noch " + (18 - alter) + " Jahre bis zum Führerschein"(print)
+alter = frag Wie alt bist du?
+rest = 18 - alter
+wenn alter > 17 dann Du darfst Auto fahren 🚗 sonst Noch rest Jahre bis zum Führerschein
 
-coffee(drink)(2x)
-"Zähle: " + i(print)(3x)
-geheim(reverse)(upper)(print)
-"Würfel: " + 6(dice)(print)
-nasa(hack)
+3x Zähle i
+kaffee
+witz
 `,
-    'Taschenrechner': `-- Ein Taschenrechner, der fast immer recht hat
-a = "Erste Zahl?"(ask)
-b = "Zweite Zahl?"(ask)
-"Summe: " + (a + b)(print)
-"Produkt: " + (a * b)(print)
-b == 0 ? "Durch 0 teile ich nicht. Ich hab Angst."(print) : "Geteilt: " + (a / b)(print)
+    'Rechner': `-- Ein Taschenrechner, der fast immer recht hat
+zahl1 = frag Erste Zahl?
+zahl2 = frag Zweite Zahl?
+summe = zahl1 + zahl2
+mal = zahl1 * zahl2
+Summe: summe
+Mal: mal
+wenn zahl2 = 0 dann Durch 0 teile ich nicht. Ich hab Angst. sonst zahl1 / zahl2
 `,
-    'Countdown': `-- Countdown mit Wiederholung (i zählt 1, 2, 3 …)
+    'Knöpfe': `-- Knöpfe: im Terminal anklicken
+Klick mal auf die Knöpfe!
+knopf1 = delete
+knopf2 = konfetti
+knopf3 = witz
+knopf4 = würfel
+knopf5 = zeit
+`,
+    'Countdown': `-- Countdown (i zählt 1, 2, 3 …)
 start = 5
-(start - i + 1)(print)(5x)
-"🚀 Abflug!"(yell)
+5x start - i + 1
+🚀 Abflug!
+konfetti
 `,
     'Troll-Show': `-- Alles, was C-- besonders macht
-"Willkommen zur Troll-Show"(rainbow)
+Willkommen zur Troll-Show
 bugs=features
-coffee(drink)(3x)
-nasa(hack)
-"Münze: " + (coin)(print)
-"Sinn des Lebens: " + life(meaning)(print)
-"psst, geheim"(whisper)
-laut(yell)
-exit(please)
-"Das hier sieht niemand mehr."(print)
+3x kaffee
+hack
+münze
+witz
+konfetti
+tschüss
+Das hier sieht niemand mehr.
 `,
   };
 
   const SNIPPETS = [
     ['Los geht’s', [
-      ['helloworld(print)', 'Hello, World!'],
-      ['"Hallo"(print)', 'Text ausgeben'],
-      ['hallo(yell)', 'LAUT ausgeben'],
-      ['hallo(rainbow)', 'bunt ausgeben'],
+      ['hallo welt', 'zeigt „hallo welt“'],
+      ['hallo name', 'Variablen im Text werden ersetzt'],
       ['-- Kommentar', 'wird ignoriert'],
     ]],
     ['Variablen & Rechnen', [
-      ['x = 5', 'Variable anlegen'],
-      ['x--', 'minus 1 (das Markenzeichen)'],
-      ['(x * 2 + 1)(print)', 'rechnen: + - * / %'],
-      ['"Ergebnis: " + x(print)', 'Text zusammenkleben'],
+      ['zahl1 = 5', 'Variable anlegen'],
+      ['zahl1 + zahl2', 'rechnen: + - * / %'],
+      ['summe = zahl1 + zahl2', 'Ergebnis merken'],
+      ['zahl1--', 'minus 1 (das Markenzeichen)'],
     ]],
-    ['Eingabe', [
-      ['name = "Wie heisst du?"(ask)', 'fragt im Terminal nach'],
-      ['hallo(upper)(reverse)(print)', 'Funktionen hintereinander'],
+    ['Fragen', [
+      ['name = frag Wie heisst du?', 'fragt im Terminal nach'],
+    ]],
+    ['Knöpfe', [
+      ['knopf1 = delete', 'Klick löscht alles'],
+      ['knopf2 = konfetti', 'Klick macht Konfetti'],
+      ['knopf3 = hallo name', 'Klick zeigt Text'],
     ]],
     ['Wiederholen & Wenn', [
-      ['"Spam"(print)(3x)', '3× wiederholen, i zählt mit'],
-      ['x > 3 ? gross(print) : klein(print)', 'wenn … sonst'],
+      ['3x hallo', '3× wiederholen, i zählt mit'],
+      ['wenn zahl1 > 3 dann gross sonst klein', 'wenn … dann … sonst'],
     ]],
-    ['Troll', [
+    ['Spass', [
       ['bugs=none', 'alle Bugs entfernen'],
-      ['bugs=features', 'Bugs umbenennen'],
-      ['coffee(drink)', 'Produktivität +100 %'],
-      ['nasa(hack)', 'sehr echtes Hacken'],
-      ['6(dice)', 'Würfel'],
-      ['life(meaning)', 'Sinn des Lebens'],
-      ['2(sleep)', 'warten'],
-      ['exit(please)', 'beenden, aber höflich'],
+      ['konfetti', '🎉'],
+      ['witz', 'Programmierer-Witz'],
+      ['würfel', 'Würfel 1–6'],
+      ['kaffee', 'Produktivität +100 %'],
+      ['hack', 'sehr echtes Hacken'],
+      ['delete', 'Terminal leeren'],
+      ['tschüss', 'Programm beenden'],
     ]],
   ];
 
@@ -164,6 +175,15 @@ exit(please)
     readLine: prompt,
     clear: clearTerm,
     exit: () => { throw EXIT; },
+    // knopf1 = delete → echter Knopf im Terminal
+    button: (label, action) => {
+      const b = el('button', 'term-btn', label);
+      b.type = 'button';
+      b.onclick = () => clickButton(action);
+      cur.appendChild(b);
+      newLine();
+      scrollDown();
+    },
     stopped: () => stopFlag,
   };
 
@@ -171,7 +191,8 @@ exit(please)
   const src = $('src'), hl = $('hl'), gutter = $('gutter');
   const repl = CMM.create({ ...io, stopped: () => false });
   const FUNCS = new Set(repl.funcs);
-  const MAGIC = new Set(['helloworld', 'bugs', 'none', 'features', 'jap', 'nope', 'true', 'false', 'sudo']);
+  const MAGIC = new Set(['helloworld', 'bugs', 'none', 'features', 'jap', 'nope', 'true', 'false', 'sudo',
+    'wenn', 'dann', 'sonst', 'frag', 'frage', 'delete', 'löschen', 'konfetti', 'witz', 'würfel', 'münze', 'zeit', 'uhr', 'datum', 'kaffee', 'hack', 'hilfe', 'tschüss']);
   const esc = (s) => s.replace(/[&<>]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[ch]));
   const TOKEN = /("[^"]*"?|'[^']*'?)|(\(\s*\d+x\s*\))|(\(\s*[A-Za-zÄÖÜäöüß_]\w*\s*\))|(\d+(?:\.\d+)?)|([A-Za-zÄÖÜäöüß_][\wÄÖÜäöüß]*)|(==|!=|>=|<=|\+\+|--|[-+*/%=?:<>])|(;)/g;
   function hiLine(line) {
@@ -186,7 +207,7 @@ exit(please)
       else if (rep) cls = 't-repeat';
       else if (call) cls = FUNCS.has(m.replace(/[()\s]/g, '')) ? 't-func' : '';
       else if (num) cls = 't-number';
-      else if (word) cls = MAGIC.has(word) ? 't-magic' : '';
+      else if (word) cls = /^(knopf|button)/i.test(word) ? 't-knopf' : MAGIC.has(word.toLowerCase()) ? 't-magic' : '';
       else if (op) cls = 't-op';
       else if (semi) cls = 't-bad';
       html += cls ? `<span class="${cls}">${esc(m)}</span>` : esc(m);
@@ -321,6 +342,18 @@ exit(please)
   const troll = (a) => a[Math.floor(Math.random() * a.length)];
 
   // Konsole: läuft immer, wenn kein Programm läuft
+  // Klick auf einen Knopf im Terminal: Aktion ausführen (nicht während ein Programm läuft)
+  async function clickButton(action) {
+    if (running) { status('⏳ Erst warten, bis das Programm fertig ist.'); return; }
+    running = true; stopFlag = false;
+    let finish; runDone = new Promise((r) => { finish = r; });
+    cancelPrompt(true);
+    try { await action(); }
+    catch (e) { if (e !== EXIT) write(`\x1b[31m💥 ${e.message}\x1b[0m\n`); }
+    running = false;
+    finish();
+  }
+
   async function replLoop() {
     for (;;) {
       if (running) { await runDone; continue; }
@@ -341,7 +374,7 @@ exit(please)
   exSel.onchange = () => {
     const k = exSel.value; exSel.value = '';
     if (!k || !okToDiscard()) return;
-    load(EXAMPLES[k], { path: null, name: k.toLowerCase().replace(/\W+/g, '-') + '.cmm' }, true);
+    load(EXAMPLES[k], { path: null, name: k.toLowerCase().replace(/[^a-z0-9äöüß]+/g, '-') + '.cmm' }, true);
   };
   const side = $('side');
   for (const [title, items] of SNIPPETS) {
