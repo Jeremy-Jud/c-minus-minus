@@ -84,6 +84,28 @@ ipcMain.on('update-install', () => {
 });
 ipcMain.handle('version', () => app.getVersion());
 
+// ---------- KI (ki <Wunsch>) ----------
+// Der API-Schlüssel wird mit Windows verschlüsselt (safeStorage) gespeichert und verlässt den Hauptprozess nie.
+const { safeStorage } = require('electron');
+const keyFile = () => path.join(app.getPath('userData'), 'ai-key.bin');
+function loadKey() {
+  try { return safeStorage.decryptString(fs.readFileSync(keyFile())); } catch { return null; }
+}
+ipcMain.handle('ai-has-key', () => !!loadKey() || !!process.env.ANTHROPIC_API_KEY);
+ipcMain.handle('ai-set-key', (_e, key) => {
+  key = String(key || '').trim();
+  if (!key) { try { fs.unlinkSync(keyFile()); } catch {} return { ok: true, removed: true }; }
+  if (key.length < 20 || /\s/.test(key)) return { ok: false, error: 'Das sieht nicht nach einem API-Schlüssel aus.' };
+  if (!safeStorage.isEncryptionAvailable()) return { ok: false, error: 'Windows kann den Schlüssel hier nicht verschlüsseln.' };
+  fs.writeFileSync(keyFile(), safeStorage.encryptString(key));
+  return { ok: true };
+});
+ipcMain.handle('ai-ask', async (_e, wish, vars) => {
+  let ai;
+  try { ai = require('../ai.js'); } catch { return { error: 'KI-Modul fehlt.' }; }
+  return ai.ask(String(wish || '').slice(0, 2000), vars && typeof vars === 'object' ? vars : {}, loadKey());
+});
+
 ipcMain.on('dirty', (_e, v) => { dirty = !!v; });
 ipcMain.on('title', (_e, t) => { if (win) win.setTitle(String(t).slice(0, 200)); });
 

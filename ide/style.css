@@ -129,6 +129,27 @@ body.running .status { background: var(--run); }
 body.failed .status { background: var(--stop); color: #fff; }
 body.failed .status .muted { color: #ffe1e1; }
 
+/* KI-Dialog */
+.dlg { width: min(480px, calc(100vw - 32px)); background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; box-shadow: 0 20px 60px rgba(0, 0, 0, .5); }
+.dlg::backdrop { background: rgba(0, 0, 0, .55); }
+.dlg h2 { margin: 0 0 8px; font-size: 17px; }
+.dlg p { margin: 0 0 10px; font-size: 13px; line-height: 1.5; }
+.dlg code { font-family: var(--mono); background: var(--panel2); padding: 1px 5px; border-radius: 4px; color: var(--s-func); }
+.dlg a { color: var(--accent); }
+.dlg label { display: block; font-size: 12px; font-weight: 600; margin: 12px 0 4px; }
+.dlg input { width: 100%; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font: 13px var(--mono); outline: none; }
+.dlg input:focus { border-color: var(--accent); }
+.dlg-msg { min-height: 18px; font-size: 12.5px; margin-top: 6px; }
+.dlg-msg.ok { color: var(--run); }
+.dlg-msg.err { color: #ff6b6b; }
+.dlg-actions { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+.dlg-actions .grow { flex: 1; }
+.dlg-actions button { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+.dlg-actions button:hover { border-color: var(--accent); }
+.dlg-actions .primary { background: var(--accent); border-color: var(--accent); color: #1a0d2e; font-weight: 700; }
+.dlg-actions .ghost { background: none; border-color: transparent; color: var(--muted); }
+#bAI.on { border-color: var(--accent); }
+
 ::-webkit-scrollbar { width: 11px; height: 11px; }
 ::-webkit-scrollbar-thumb { background: #3a3e4b; border-radius: 6px; border: 3px solid transparent; background-clip: content-box; }
 .term::-webkit-scrollbar-thumb { background: #2a4f8a; border: 3px solid transparent; background-clip: content-box; }

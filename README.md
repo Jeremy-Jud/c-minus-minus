@@ -46,6 +46,8 @@ Ohne `C--.cmd` geht es auch mit `node cmm.js` bzw. `node cmm.js datei.cmm`. Es b
 | `name = frag Wie heisst du?` | fragen |
 | `3x hallo` | wiederholen, `i` zählt mit |
 | `wenn x > 3 dann gross sonst klein` | wenn … dann … sonst |
+| `wenn zahl1 > zahl2 schreibe ja falls nicht schreibe nein` | geht auch als normaler Satz (auch mit „grösser als“, „ist gleich“, „sonst“) |
+| `schreibe zahl1 + zahl2` | zeigt das Ergebnis |
 | `knopf1 = delete` | Knopf im Studio, ein Klick löscht alles |
 | `knopf2 = konfetti` | Knopf mit beliebigem Befehl oder Text |
 | `x--`, `x++` | minus 1, plus 1 |
@@ -57,9 +59,25 @@ Ohne `C--.cmd` geht es auch mit `node cmm.js` bzw. `node cmm.js datei.cmm`. Es b
 | `hilfe` | alle Befehle |
 | `tschüss` | beenden |
 
-**Profi-Modus** (geht weiterhin): `"Text"(print)`, `hallo(yell)`, `hallo(rainbow)`, `name = "Frage?"(ask)`, `"Spam"(print)(3x)`, `x > 3 ? gross(print) : klein(print)`, `exit(please)`.
+## 🤖 KI: einfach irgendwas eingeben
 
-Semikolons, `sudo` und `C++` werden nicht gern gesehen.
+```
+ki mach 3 knöpfe mit witzen
+ki rechne zahl1 mal zwei und sag ob das viel ist
+ki was ist die hauptstadt von japan
+```
+
+Hinter `ki` darf irgendetwas stehen. Claude (Anthropic) macht daraus C--Code, der sofort ausgeführt wird. Die KI antwortet nicht, du siehst nur die echte Ausgabe. Der Code läuft nur im C--Interpreter: Er kann nichts auf deinem PC verändern.
+
+Dafür braucht es einen eigenen [Anthropic-API-Schlüssel](https://console.anthropic.com/settings/keys). Jede Frage wird über dein Konto abgerechnet (ein paar Rappen).
+- **C-- Studio:** oben auf **🤖 KI** klicken und den Schlüssel eintragen. Er wird mit Windows verschlüsselt gespeichert.
+- **Konsole:** Umgebungsvariable `ANTHROPIC_API_KEY` setzen.
+
+**Verboten:** `;` und `"` geben einen Syntaxfehler. Text schreibt man einfach ohne Anführungszeichen.
+
+**Extras:** `hallo(yell)`, `hallo(rainbow)`, `hallo(reverse)`, `x > 3 ? gross(print) : klein(print)`, `exit(please)`.
+
+`sudo` und `C++` werden nicht gern gesehen.
 
 ## C-- Studio (Entwicklungsumgebung)
 

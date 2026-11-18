@@ -2,7 +2,7 @@
 // io = { write(text), readLine(prompt) -> Promise<string|null>, clear(), exit(), stopped() }
 (function (root) {
   'use strict';
-  const VERSION = '1.1 (Codename: „Einfach so“)';
+  const VERSION = '1.2 (Codename: „Mach einfach“)';
   const c = {
     reset: '\x1b[0m', dim: '\x1b[2m', bold: '\x1b[1m',
     red: '\x1b[31m', green: '\x1b[32m', yellow: '\x1b[33m', blue: '\x1b[34m', magenta: '\x1b[35m', cyan: '\x1b[36m', gray: '\x1b[90m',
@@ -252,13 +252,22 @@
     if (io.stopped && io.stopped()) throw new StopSignal();
     let s = line.trim();
     if (!s || s.startsWith('--')) return; // Kommentar: -- so wie der Name
-    if (s.endsWith(';')) {
-      out(c.yellow + '⚠️  Semikolon gefunden. Das hier ist C--, nicht C++. Hab es für dich gelöscht. 🙄' + c.reset);
-      s = s.replace(/;+$/, '').trim();
+    // ; und " gibt es in C-- nicht
+    if (s.includes(';')) fail('Syntaxfehler: ; gibt es in C-- nicht. Eine Anweisung pro Zeile reicht.');
+    if (s.includes('"')) fail('Syntaxfehler: " gibt es in C-- nicht. Schreib Text einfach ohne Anführungszeichen.');
+    // Ganze Zeile in Klammern: (wenn … ) → ohne Klammern
+    if (/^\(.*\)$/.test(s) && !/^\([^()]*\)\s*\(/.test(s)) {
+      const inner = s.slice(1, -1).trim();
+      if (/^(wenn|ki|schreib|zeig|sag)/i.test(inner)) s = inner;
     }
+    s = natural(s);
     if (/^sudo\b/i.test(s)) { out(c.red + 'Netter Versuch. Hier ist niemand Admin. Nicht mal ich.' + c.reset); return; }
     if (/^c\+\+$/i.test(s)) { out('Igitt. 🤢'); return; }
     if (/^exit$/i.test(s)) { out(c.yellow + 'Wie sagt man? → exit(please)' + c.reset); return; }
+
+    // KI: ki <irgendwas> → Claude schreibt C--Code, der still ausgeführt wird
+    const kiM = /^(?:ki|ai)\b[:,]?\s*(.*)$/i.exec(s);
+    if (kiM) { await askAI(kiM[1]); return; }
 
     // ---------- Einfache Befehle: einfach das Wort hinschreiben ----------
     const cmd = s.toLowerCase();
@@ -273,11 +282,14 @@
       return;
     }
 
-    // Wenn … dann … sonst …
+    // Schreiben: schreibe hallo  / zeig zahl1
+    const schreib = /^(?:schreibe?|zeige?|sag|gib\s+aus)\s+(.+)$/i.exec(s);
+    if (schreib) { await run(schreib[1]); return; }
+
+    // Wenn … dann … sonst …  (natural() hat „schreibe“, „falls nicht“ usw. schon umgeformt)
     const wenn = /^wenn\s+(.+?)\s+dann\s+(.+?)(?:\s+sonst\s+(.+))?$/i.exec(s);
     if (wenn) {
-      // ein einzelnes = heisst hier „ist gleich“
-      const ok = await evaluate(wenn[1].replace(/(^|[^=!<>])=(?!=)/g, '$1=='));
+      const ok = await evaluate(cond(wenn[1]));
       if (ok) await run(wenn[2]);
       else if (wenn[3]) await run(wenn[3]);
       return;
@@ -351,6 +363,55 @@
     catch (e) { if (e instanceof ParseError) return toText(s); throw e; }
   }
 
+  // Natürliche Sätze in C-- umformen:
+  //   wenn zahl1 > zahl2 schreibe yess falls nicht schreibe nein  →  wenn zahl1 > zahl2 dann yess sonst nein
+  function natural(s) {
+    const m = /^wenn\s+(.+)$/i.exec(s);
+    if (!m) return s;
+    let rest = m[1];
+    if (/\sdann\s/i.test(' ' + rest + ' ') && !/\s(schreibe?|zeige?|sag)\s/i.test(' ' + rest + ' ')) return s;
+    // „sonst“-Teil abtrennen
+    const elseRe = /\s*,?\s+(?:falls\s+nicht|wenn\s+nicht|ansonsten|sonst|andernfalls)\s*,?\s+/i;
+    let elsePart = null;
+    const em = elseRe.exec(rest);
+    if (em) { elsePart = rest.slice(em.index + em[0].length); rest = rest.slice(0, em.index); }
+    // Bedingung und dann-Teil trennen
+    const tm = /\s*,?\s+(?:dann\s+)?(?:schreibe?|zeige?|sag|gib\s+aus|dann)\s+/i.exec(rest);
+    if (!tm) return s;
+    const condPart = rest.slice(0, tm.index), thenPart = rest.slice(tm.index + tm[0].length);
+    const strip = (x) => x.replace(/^(?:dann\s+)?(?:schreibe?|zeige?|sag|gib\s+aus)\s+/i, '').trim();
+    return `wenn ${condPart} dann ${strip(thenPart)}` + (elsePart ? ` sonst ${strip(elsePart)}` : '');
+  }
+  // Bedingung in Rechen-Schreibweise: „ist grösser als“ → >, ein einzelnes = heisst „ist gleich“
+  function cond(x) {
+    return x
+      .replace(/\s+(?:ist\s+)?(?:grösser|größer|groesser|mehr)\s+(?:als\s+)?/gi, ' > ')
+      .replace(/\s+(?:ist\s+)?(?:kleiner|weniger)\s+(?:als\s+)?/gi, ' < ')
+      .replace(/\s+(?:ist\s+)?(?:nicht\s+gleich|ungleich)\s+(?:wie\s+)?/gi, ' != ')
+      .replace(/\s+(?:ist\s+)?gleich\s+(?:wie\s+)?/gi, ' == ')
+      .replace(/(^|[^=!<>])=(?!=)/g, '$1==');
+  }
+
+  // ki <Wunsch>: die KI schreibt C--Code, der still ausgeführt wird. Man sieht nur die echte Ausgabe.
+  async function askAI(wish) {
+    if (!wish.trim()) fail('ki braucht einen Auftrag, z. B.: ki mach 3 knöpfe mit witzen');
+    if (!io.ai) fail('Die KI ist hier nicht verfügbar.');
+    io.write(c.gray + '🤖 …' + c.reset); // kurzer Hinweis, wird gleich wieder gelöscht
+    const snapshot = {};
+    for (const [k, v] of Object.entries(vars)) if (k !== 'i') snapshot[k] = v;
+    let r;
+    try { r = await io.ai(wish, snapshot); }
+    finally { io.write('\r    \r'); }
+    if (!r || r.error) {
+      if (r && r.needKey && io.aiKeyHint) out(c.gray + io.aiKeyHint + c.reset);
+      fail(r ? r.error : 'Die KI hat nicht geantwortet.');
+    }
+    const lines = (r.code || '').split('\n')
+      .map((l) => l.replace(/[";]/g, '').trim()) // sicher ist sicher: ; und " gibt es nicht
+      .filter((l) => l && !/^(ki|ai)\b/i.test(l)); // keine KI in der KI
+    for (const l of lines) await run(l);
+  }
+
   const JOKES = [
     'Warum mögen Programmierer keine Natur? Zu viele Bugs.',
     'Es gibt 10 Arten von Menschen: die, die binär verstehen, und die anderen.',
@@ -378,12 +439,14 @@
     const h = (a, b) => out(`  ${c.yellow}${a.padEnd(36)}${c.reset}${b}`);
     out(c.bold + '\nC-- Spickzettel' + c.reset + c.gray + '  (einfach hinschreiben, ohne "" und ohne print)' + c.reset);
     h('hallo welt', 'zeigt „hallo welt“');
+    h('ki <irgendwas>', 'KI macht daraus Code und führt ihn aus');
     h('zahl1 = 5', 'Variable');
     h('zahl1 + zahl2', 'rechnen: + - * / %');
     h('hallo name', 'Variablen im Text werden ersetzt');
     h('name = frag Wie heisst du?', 'fragen');
     h('3x hallo', 'wiederholen (i zählt mit)');
     h('wenn x > 3 dann gross sonst klein', 'wenn … dann … sonst');
+    h('wenn x > y schreibe ja falls nicht schreibe nein', 'geht auch in normalen Sätzen');
     h('knopf1 = delete', 'Knopf: Klick löscht alles (nur im Studio)');
     h('knopf2 = konfetti', 'Knopf mit beliebigem Befehl');
     h('x--   x++', 'minus 1 / plus 1');
@@ -393,7 +456,7 @@
     h('zeit  datum  kaffee  hack', 'noch mehr Spass');
     h('-- Kommentar', 'wird ignoriert');
     h('tschüss', 'beenden');
-    out(c.gray + '  Profi-Modus: "Text"(print), hallo(yell), hallo(rainbow), name = "Frage?"(ask), "Spam"(print)(3x)' + c.reset + '\n');
+    out(c.gray + '  Verboten: ; und " (gibt einen Syntaxfehler). Extras: hallo(yell), hallo(rainbow), hallo(reverse)' + c.reset + '\n');
     return null;
   }
 

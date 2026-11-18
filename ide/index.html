@@ -21,6 +21,7 @@
         <option value="">📚 Beispiele …</option>
       </select>
       <button id="bBugs" title="Entfernt alle Bugs. Garantiert. Fast.">🐛 Bugs entfernen</button>
+      <button id="bAI" title="KI einrichten: dann einfach „ki …“ schreiben">🤖 KI</button>
     </div>
     <button id="bHelp" class="help" title="Spickzettel ein/aus (F1)">❓</button>
   </header>
@@ -52,6 +53,21 @@
       <div id="snippets"></div>
     </aside>
   </main>
+
+  <dialog id="aiDlg" class="dlg">
+    <h2>🤖 KI in C--</h2>
+    <p>Schreib <code>ki</code> und dann irgendwas, z. B. <code>ki mach 3 knöpfe mit witzen</code> oder <code>ki was ist die hauptstadt von japan</code>. Claude macht daraus C--Code und führt ihn gleich aus. Du siehst nur das Ergebnis, keine Antwort.</p>
+    <p class="muted">Dafür braucht es einen eigenen Anthropic-API-Schlüssel. Den gibt es unter <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>. Jede Frage kostet ein paar Rappen und wird über dein Konto abgerechnet. Der Schlüssel wird mit Windows verschlüsselt auf diesem PC gespeichert.</p>
+    <label for="aiKey">API-Schlüssel</label>
+    <input id="aiKey" type="password" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
+    <div id="aiMsg" class="dlg-msg"></div>
+    <div class="dlg-actions">
+      <button id="aiRemove" type="button" class="ghost">Schlüssel entfernen</button>
+      <span class="grow"></span>
+      <button id="aiCancel" type="button">Schliessen</button>
+      <button id="aiSave" type="button" class="primary">Speichern</button>
+    </div>
+  </dialog>
 
   <footer class="status">
     <span id="stState">Bereit</span>

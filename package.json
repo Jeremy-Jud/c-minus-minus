@@ -1,6 +1,6 @@
 {
   "name": "c-minus-minus",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "C--: die Programmiersprache, die weniger kann als C++. Mit eigener Entwicklungsumgebung (C-- Studio).",
   "main": "ide/main.js",
   "bin": {
@@ -29,7 +29,8 @@
       "ide/**/*",
       "core.js",
       "beispiele/**/*",
-      "package.json"
+      "package.json",
+      "ai.js"
     ],
     "fileAssociations": [
       {
@@ -64,6 +65,7 @@
     }
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.10.0",
     "electron-updater": "^6.8.11"
   },
   "repository": {

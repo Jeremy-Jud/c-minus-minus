@@ -32,6 +32,8 @@ const cmm = CMM.create({
   readLine,
   clear: () => process.stdout.write('\x1b[2J\x1b[H'),
   exit: () => process.exit(0),
+  // ki <Wunsch>: braucht ANTHROPIC_API_KEY (oder ein Profil von „ant auth login“)
+  ai: (wish, vars) => require('./ai.js').ask(wish, vars),
 });
 
 async function main() {

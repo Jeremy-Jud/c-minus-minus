@@ -84,6 +84,12 @@ Das hier sieht niemand mehr.
     ['Wiederholen & Wenn', [
       ['3x hallo', '3× wiederholen, i zählt mit'],
       ['wenn zahl1 > 3 dann gross sonst klein', 'wenn … dann … sonst'],
+      ['wenn zahl1 > zahl2 schreibe ja falls nicht schreibe nein', 'geht auch als normaler Satz'],
+    ]],
+    ['🤖 KI (irgendwas eingeben)', [
+      ['ki mach 3 knöpfe mit witzen', 'KI macht Code daraus und führt ihn aus'],
+      ['ki rechne 17 mal 23 und sag ob das viel ist', 'rechnen mit Kommentar'],
+      ['ki schreib die hauptstadt von japan', 'zeigt nur das Ergebnis'],
     ]],
     ['Spass', [
       ['bugs=none', 'alle Bugs entfernen'],
@@ -175,6 +181,13 @@ Das hier sieht niemand mehr.
     readLine: prompt,
     clear: clearTerm,
     exit: () => { throw EXIT; },
+    // ki <Wunsch> → Hauptprozess fragt Claude (der Schlüssel bleibt dort)
+    ai: async (wish, vars) => {
+      const r = await window.studio.aiAsk(wish, vars);
+      if (r && r.needKey) setTimeout(openAI, 300);
+      return r;
+    },
+    aiKeyHint: '   Oben auf „🤖 KI“ klicken und deinen API-Schlüssel eintragen.',
     // knopf1 = delete → echter Knopf im Terminal
     button: (label, action) => {
       const b = el('button', 'term-btn', label);
@@ -192,7 +205,7 @@ Das hier sieht niemand mehr.
   const repl = CMM.create({ ...io, stopped: () => false });
   const FUNCS = new Set(repl.funcs);
   const MAGIC = new Set(['helloworld', 'bugs', 'none', 'features', 'jap', 'nope', 'true', 'false', 'sudo',
-    'wenn', 'dann', 'sonst', 'frag', 'frage', 'delete', 'löschen', 'konfetti', 'witz', 'würfel', 'münze', 'zeit', 'uhr', 'datum', 'kaffee', 'hack', 'hilfe', 'tschüss']);
+    'ki', 'wenn', 'dann', 'sonst', 'frag', 'frage', 'delete', 'löschen', 'konfetti', 'witz', 'würfel', 'münze', 'zeit', 'uhr', 'datum', 'kaffee', 'hack', 'hilfe', 'tschüss']);
   const esc = (s) => s.replace(/[&<>]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[ch]));
   const TOKEN = /("[^"]*"?|'[^']*'?)|(\(\s*\d+x\s*\))|(\(\s*[A-Za-zÄÖÜäöüß_]\w*\s*\))|(\d+(?:\.\d+)?)|([A-Za-zÄÖÜäöüß_][\wÄÖÜäöüß]*)|(==|!=|>=|<=|\+\+|--|[-+*/%=?:<>])|(;)/g;
   function hiLine(line) {
@@ -440,6 +453,38 @@ Das hier sieht niemand mehr.
   const TROLLS = ['Kompiliere nichts …', 'C++ wurde nicht gefunden. Gut so.', 'Tipp: bugs=none löst alles.', 'Zähle Bugs … Abbruch bei 999.', 'Kaffeestand wird überwacht.', 'Semikolons werden gejagt.', 'Indexiere nichts. Mit Hingabe.'];
   const rotate = () => { $('stTroll').textContent = troll(TROLLS); };
   rotate(); setInterval(rotate, 9000);
+
+  // ================= KI-Dialog =================
+  const aiDlg = $('aiDlg'), aiKey = $('aiKey'), aiMsg = $('aiMsg');
+  const aiState = async () => { const has = await window.studio.aiHasKey(); $('bAI').classList.toggle('on', has); $('bAI').textContent = has ? '🤖 KI ✓' : '🤖 KI'; return has; };
+  async function openAI() {
+    if (aiDlg.open) return;
+    const has = await aiState();
+    aiKey.value = '';
+    aiMsg.className = 'dlg-msg';
+    aiMsg.textContent = has ? '✓ Ein Schlüssel ist gespeichert. Du kannst ihn ersetzen oder entfernen.' : '';
+    aiDlg.showModal();
+    aiKey.focus();
+  }
+  $('bAI').onclick = openAI;
+  $('aiCancel').onclick = () => aiDlg.close();
+  $('aiSave').onclick = async () => {
+    if (!aiKey.value.trim()) { aiMsg.className = 'dlg-msg err'; aiMsg.textContent = 'Bitte zuerst einen Schlüssel einfügen.'; return; }
+    const r = await window.studio.aiSetKey(aiKey.value);
+    aiKey.value = '';
+    if (!r.ok) { aiMsg.className = 'dlg-msg err'; aiMsg.textContent = r.error; return; }
+    await aiState();
+    aiMsg.className = 'dlg-msg ok'; aiMsg.textContent = '✓ Gespeichert. Probier im Terminal: ki erzähl mir einen witz';
+    setTimeout(() => { if (aiDlg.open) aiDlg.close(); }, 1400);
+  };
+  aiKey.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('aiSave').click(); } });
+  $('aiRemove').onclick = async () => {
+    await window.studio.aiSetKey('');
+    await aiState();
+    aiMsg.className = 'dlg-msg ok'; aiMsg.textContent = 'Schlüssel entfernt.';
+  };
+  aiDlg.addEventListener('close', () => { if (pending) pending.inp.focus(); });
+  aiState();
 
   // ================= Updates =================
   const stVer = $('stVer'), stUpd = $('stUpd');
